@@ -1,0 +1,56 @@
+(* B-Minor grammar used by this project. Whitespace and comments are ignored. *)
+
+program          = { declaration } ;
+declaration      = variable-declaration | function-declaration ;
+variable-declaration = identifier, ":", type, [ "=", initializer ], ";" ;
+function-declaration = identifier, ":", "function", return-type,
+                       "(", [ parameter-list ], ")",
+                       ( ";" | "=", block ) ;
+parameter-list   = parameter, { ",", parameter } ;
+parameter        = identifier, ":", parameter-type ;
+parameter-type   = type | "array", "[", "]", type ;
+return-type      = type | "void" ;
+type             = atomic-type | "array", "[", [ expression ], "]", type ;
+atomic-type      = "integer" | "boolean" | "char" | "string" ;
+initializer      = expression | "{", [ initializer, { ",", initializer } ], "}" ;
+
+block            = "{", { statement | local-declaration }, "}" ;
+local-declaration = identifier, ":", type, [ "=", initializer ], ";" ;
+statement        = block
+                 | "if", "(", expression, ")", statement, [ "else", statement ]
+                 | "for", "(", [ expression ], ";", [ expression ], ";",
+                   [ expression ], ")", statement
+                 | "return", [ expression ], ";"
+                 | "print", expression, { ",", expression }, ";"
+                 | expression, ";"
+                 | ";" ;
+
+expression       = assignment ;
+assignment       = logical-or, [ "=", assignment ] ;
+logical-or       = logical-and, { "||", logical-and } ;
+logical-and      = equality, { "&&", equality } ;
+equality         = comparison, { ( "==" | "!=" ), comparison } ;
+comparison       = additive, { ( "<" | "<=" | "=<" | ">" | ">=" | "=>" ), additive } ;
+additive         = multiplicative, { ( "+" | "-" ), multiplicative } ;
+multiplicative   = power, { ( "*" | "/" | "%" ), power } ;
+power            = unary, [ "^", power ] ;
+unary            = ( "!" | "-" ), unary | postfix ;
+postfix          = primary, { call-suffix | index-suffix | "++" | "--" } ;
+call-suffix      = "(", [ argument-list ], ")" ;
+index-suffix     = "[", expression, "]" ;
+argument-list    = expression, { ",", expression } ;
+primary          = identifier | integer-literal | boolean-literal
+                 | character-literal | string-literal
+                 | "(", expression, ")" ;
+
+identifier       = ( letter | "_" ), { letter | digit | "_" } ;
+integer-literal  = digit, { digit } ;
+boolean-literal  = "true" | "false" ;
+character-literal = "'", character-or-escape, "'" ;
+string-literal   = '"', { character-or-escape }, '"' ;
+character-or-escape = any-character-except-quote-backslash | "\\", any-character ;
+letter           = "A" ... "Z" | "a" ... "z" ;
+digit            = "0" ... "9" ;
+
+(* The language handout lists while as a reserved word but does not include
+   a while statement among the supported statements. *)
